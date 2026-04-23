@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --teal:#00f5d4;--teal2:#00c9a7;--blue:#4361ee;--pink:#f72585;--purple:#7209b7;
+  --card:rgba(13,27,42,0.55);--sidebar:rgba(13,27,42,0.65);
+  --text:#fff;--sub:rgba(255,255,255,0.55);--border:rgba(255,255,255,0.1);
+  --input-bg:rgba(255,255,255,0.07);--hover:rgba(255,255,255,0.06);
+  --table:rgba(255,255,255,0.05);--th:rgba(0,0,0,0.35);
+}
+body.light{
+  --card:rgba(255,255,255,0.82);--sidebar:rgba(255,255,255,0.88);
+  --text:#0d1b2a;--sub:rgba(13,27,42,0.5);--border:rgba(13,27,42,0.1);
+  --input-bg:rgba(13,27,42,0.05);--hover:rgba(13,27,42,0.04);
+  --table:rgba(13,27,42,0.03);--th:rgba(13,27,42,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Outfit",sans-serif;}
+body{min-height:100vh;color:var(--text);transition:color .3s;overflow-x:hidden;}
+.bg{position:fixed;inset:0;z-index:0;background:linear-gradient(135deg,#0d1b2a,#1a0533,#0a2a4a,#003d3b,#1a0533,#0d1b2a);background-size:400% 400%;animation:gradShift 14s ease infinite;}
+body.light .bg{background:linear-gradient(135deg,#e0f7fa,#e8eaf6,#e0f2fe,#f3e5f5,#e8eaf6,#e0f7fa);background-size:400% 400%;}
+@keyframes gradShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.orb{position:fixed;border-radius:50%;filter:blur(100px);opacity:.25;pointer-events:none;z-index:0;animation:orbFloat 22s ease-in-out infinite;}
+.orb1{width:600px;height:600px;background:radial-gradient(circle,#7209b7,transparent);top:-200px;left:-200px;}
+.orb2{width:500px;height:500px;background:radial-gradient(circle,#4361ee,transparent);bottom:-150px;right:-150px;animation-delay:-10s;}
+.orb3{width:400px;height:400px;background:radial-gradient(circle,#00c9a7,transparent);top:40%;left:40%;animation-delay:-20s;}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(40px,-30px) scale(1.05);}66%{transform:translate(-30px,40px) scale(0.96);}}
+.wrapper{display:flex;position:relative;z-index:1;}
+.sidebar{width:240px;height:100vh;background:var(--sidebar);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:24px 16px;position:fixed;overflow-y:auto;border-right:1px solid var(--border);z-index:50;}
+.sidebar-logo{display:flex;align-items:center;gap:11px;padding:0 8px;margin-bottom:28px;}
+.sidebar-logo .icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--teal2),var(--purple));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sidebar-logo h2{font-size:16px;font-weight:700;}
+.sidebar a{display:flex;align-items:center;gap:10px;padding:11px 14px;margin-bottom:4px;color:var(--sub);text-decoration:none;border-radius:12px;cursor:pointer;font-size:14px;font-weight:500;transition:all .2s;}
+.sidebar a:hover{background:var(--hover);color:var(--text);}
+.sidebar a.active{background:linear-gradient(135deg,rgba(0,201,167,.18),rgba(67,97,238,.18));color:var(--teal);border:1px solid rgba(0,201,167,.2);}
+.sidebar-chart{margin-top:16px;padding:14px;background:var(--hover);border-radius:14px;border:1px solid var(--border);}
+.sidebar-chart h4{font-size:13px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.sidebar-chart button{padding:3px 8px;border:none;border-radius:6px;cursor:pointer;background:var(--teal2);color:#fff;font-size:11px;font-family:"Outfit",sans-serif;}
+.sidebar-chart canvas{width:100%!important;height:140px!important;}
+#top3{font-size:12px;margin-bottom:8px;color:var(--sub);}
+.main{margin-left:240px;padding:28px;width:100%;min-height:100vh;}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;gap:12px;flex-wrap:wrap;}
+.topbar h2{font-size:22px;font-weight:700;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.clock{font-size:13px;color:var(--sub);background:var(--card);padding:7px 13px;border-radius:10px;border:1px solid var(--border);backdrop-filter:blur(12px);}
+.top-btn{padding:9px 16px;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;font-family:"Outfit",sans-serif;transition:all .2s;}
+.top-btn.theme{background:var(--card);color:var(--text);border:1px solid var(--border);backdrop-filter:blur(12px);}
+.top-btn.logout{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.2);}
+.top-btn:hover{transform:translateY(-1px);}
+.card{background:var(--card);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:22px;border-radius:18px;margin-bottom:20px;border:1px solid var(--border);box-shadow:0 8px 32px rgba(0,0,0,.2);}
+.kpi{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;}
+.kpi .card{flex:1;min-width:180px;text-align:center;padding:22px 16px;position:relative;overflow:hidden;}
+.kpi .card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal2),var(--blue));}
+.kpi .card h3{font-size:13px;font-weight:600;color:var(--sub);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+.kpi .card h2{font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--teal),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;}
+.form input,.form select{padding:11px 14px;border-radius:11px;border:1px solid var(--border);outline:none;background:var(--input-bg);color:var(--text);font-size:14px;font-family:"Outfit",sans-serif;flex:1;min-width:160px;transition:border-color .2s;}
+.form input:focus,.form select:focus{border-color:var(--teal);}
+.form input::placeholder{color:var(--sub);}
+.form select option{background:#1a2744;color:#fff;}
+button{padding:10px 16px;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;font-family:"Outfit",sans-serif;transition:all .2s;}
+.add{background:linear-gradient(135deg,var(--teal2),var(--blue));color:#fff;box-shadow:0 4px 14px rgba(0,201,167,.3);}
+.add:hover{transform:translateY(-1px);}
+.show{background:var(--hover);color:var(--text);border:1px solid var(--border);}
+.edit{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.25);}
+.edit:hover{background:rgba(245,158,11,.25);}
+.delete{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.2);}
+.delete:hover{background:rgba(239,68,68,.22);}
+.search-box{background:var(--card);backdrop-filter:blur(14px);padding:16px;border-radius:16px;margin-bottom:16px;border:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.search-box input{padding:10px 14px;flex:1;min-width:200px;border-radius:10px;border:1px solid var(--border);outline:none;background:var(--input-bg);color:var(--text);font-size:14px;font-family:"Outfit",sans-serif;transition:border-color .2s;}
+.search-box input:focus{border-color:var(--teal);}
+.search-box input::placeholder{color:var(--sub);}
+.tbl-wrap{overflow-x:auto;border-radius:14px;}
+table{width:100%;border-collapse:collapse;background:var(--table);border-radius:14px;overflow:hidden;}
+th{background:var(--th);padding:13px 14px;text-align:center;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--sub);}
+td{padding:13px 14px;text-align:center;font-size:14px;border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--hover);}
+.pagination{text-align:center;margin-top:14px;}
+.page-btn{margin:3px;padding:7px 13px;border-radius:8px;border:1px solid var(--border);background:var(--hover);color:var(--text);font-size:13px;font-family:"Outfit",sans-serif;}
+.page-btn:hover{background:var(--teal2);color:#fff;border-color:var(--teal2);}
+.filter{margin-bottom:12px;}
+.filter select{padding:9px 13px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:"Outfit",sans-serif;outline:none;}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.65);justify-content:center;align-items:center;z-index:999;backdrop-filter:blur(4px);}
+.modal-content{background:rgba(13,27,42,0.95);backdrop-filter:blur(24px);padding:28px;border-radius:20px;max-width:500px;width:90%;border:1px solid var(--border);box-shadow:0 30px 80px rgba(0,0,0,.6);animation:modalIn .3s cubic-bezier(.22,1,.36,1);}
+body.light .modal-content{background:rgba(255,255,255,0.97);}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(20px)}to{opacity:1;transform:none}}
+.modal-content input,.modal-content select{width:100%;margin:6px 0;padding:11px 14px;border-radius:11px;border:1px solid var(--border);outline:none;background:var(--input-bg);color:var(--text);font-size:14px;font-family:"Outfit",sans-serif;}
+.modal-content input:focus,.modal-content select:focus{border-color:var(--teal);}
+.modal-content h3{font-size:17px;font-weight:700;margin-bottom:16px;}
+.modal-footer{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;}
+.toast{position:fixed;bottom:24px;right:24px;padding:13px 20px;border-radius:12px;display:none;z-index:1000;font-size:14px;font-weight:600;backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);}
+.toast.show{display:block;animation:toastIn .3s ease;}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hidden{display:none;}
+#bigChart{max-width:400px!important;max-height:400px!important;margin:auto;display:block;}
+.timetable-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:20px 0;}
+.timetable-header{background:linear-gradient(135deg,rgba(0,201,167,.2),rgba(67,97,238,.2))!important;font-weight:700!important;border:1px solid rgba(0,201,167,.2)!important;}
+.time-slot{padding:10px;background:var(--hover);border-radius:10px;min-height:82px;position:relative;cursor:pointer;border:1px solid var(--border);transition:border-color .2s;}
+.time-slot:hover{border-color:var(--teal);}
+.class-info{padding:4px 0;font-size:12px;}
+.class-course{font-weight:700;color:var(--teal);}
+.class-teacher{font-size:11px;color:var(--sub);}
+.timetable-controls{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.semester-select,.day-select{padding:9px 13px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:"Outfit",sans-serif;outline:none;}
+.settings-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.settings-tab-btn{padding:10px 20px;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:var(--hover);color:var(--sub);font-size:13px;font-weight:600;font-family:"Outfit",sans-serif;transition:all .2s;}
+.settings-tab-btn.active-stab{background:linear-gradient(135deg,rgba(0,201,167,.2),rgba(67,97,238,.2));color:var(--teal);border-color:rgba(0,201,167,.3);}
+.settings-section{display:none;}
+.settings-section.active-ssec{display:block;}
+.settings-card{background:var(--hover);padding:22px;border-radius:16px;margin-bottom:16px;border:1px solid var(--border);}
+.settings-card h3{margin-bottom:16px;font-size:15px;font-weight:700;border-bottom:1px solid var(--border);padding-bottom:10px;}
+.settings-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+.settings-row label{min-width:180px;font-size:13px;color:var(--sub);}
+.settings-row input,.settings-row select{padding:9px 13px;border-radius:10px;border:1px solid var(--border);flex:1;min-width:160px;background:var(--input-bg);color:var(--text);font-size:13px;font-family:"Outfit",sans-serif;outline:none;}
+.settings-row input:focus,.settings-row select:focus{border-color:var(--teal);}
+.settings-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.save-btn{background:linear-gradient(135deg,var(--teal2),var(--blue));color:#fff;}
+.reset-btn{background:var(--hover);color:var(--sub);border:1px solid var(--border);}
+.grading-table-wrap{overflow-x:auto;}
+.grading-table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden;}
+.grading-table th{background:var(--th);padding:10px;text-align:center;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--sub);}
+.grading-table td{padding:9px 10px;text-align:center;font-size:13px;border-bottom:1px solid var(--border);}
+.grading-table input{width:75px;padding:6px;border-radius:7px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);text-align:center;font-family:"Outfit",sans-serif;}
+.session-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-left:6px;}
+.badge-active{background:rgba(34,197,94,.15);color:#22c55e;}
+.badge-inactive{background:rgba(148,163,184,.15);color:#94a3b8;}
+.badge-upcoming{background:rgba(245,158,11,.15);color:#f59e0b;}
+.badge-closed{background:rgba(239,68,68,.15);color:#ef4444;}
+.session-list{margin-top:10px;}
+.session-item{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--hover);border-radius:12px;margin-bottom:8px;border:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.session-item-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;}
+.session-item-actions{display:flex;gap:6px;}
+.scale-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;background:var(--teal2);color:#fff;margin-left:8px;}
+.weight-bar{height:10px;border-radius:5px;background:var(--hover);margin-top:8px;overflow:hidden;border:1px solid var(--border);}
+.weight-bar-fill{height:100%;border-radius:5px;background:var(--teal2);transition:width .3s;}
+.bp{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;}
+.bg-green{background:rgba(34,197,94,.12);color:#22c55e;}
+.bg-red{background:rgba(239,68,68,.12);color:#ef4444;}
+.bg-yellow{background:rgba(245,158,11,.12);color:#f59e0b;}
+.bg-blue{background:rgba(67,97,238,.12);color:#4361ee;}
+.bg-gray{background:rgba(148,163,184,.12);color:#94a3b8;}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<div class="wrapper">
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="icon">🎓</div>
+    <h2>Admin Portal</h2>
+  </div>
+  <a onclick="setTab('dashboard',this)" class="active">📊 Dashboard</a>
+  <a onclick="setTab('students',this)">👨‍🎓 Students</a>
+  <a onclick="setTab('teachers',this)">👨‍🏫 Teachers</a>
+  <a onclick="setTab('courses',this)">📚 Courses</a>
+  <a onclick="setTab('departments',this)">🏛️ Departments</a>
+  <a onclick="setTab('enrollments',this)">📋 Enrollments</a>
+  <a onclick="setTab('allocations',this)">🔗 Allocations</a>
+  <a onclick="setTab('timetable',this)">🕒 Timetable</a>
+  <a onclick="setTab('analytics',this)">📈 Analytics</a>
+  <a onclick="setTab('settings',this)">⚙️ System Settings</a>
+  <div class="sidebar-chart" id="chartCard" style="display:none">
+    <h4>Courses <button onclick="toggleChartType()">Switch</button></h4>
+    <div id="top3"></div>
+    <canvas id="chart"></canvas>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <h2 id="viewTitle">Dashboard</h2>
+    <div class="topbar-right">
+      <div class="clock" id="clock"></div>
+      <button class="top-btn theme" onclick="toggleTheme()">🌗 Theme</button>
+      <button class="top-btn logout" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div id="dashboardView">
+    <div class="kpi">
+      <div class="card"><h3>Total Students</h3><h2 id="kpiTotal">0</h2></div>
+      <div class="card"><h3>Courses</h3><h2 id="kpiCourses">0</h2></div>
+      <div class="card"><h3>Enrollments</h3><h2 id="kpiEnrollments">0</h2></div>
+      <div class="card"><h3>Most Popular</h3><h2 id="kpiTop" style="font-size:18px;padding-top:6px;">-</h2></div>
+    </div>
+  </div>
+
+  <div id="studentsView" class="hidden">
+    <div class="card form" style="margin-bottom:16px;">
+      <input id="name" placeholder="Name">
+      <input id="email" placeholder="Email">
+      <input id="course" placeholder="Course">
+      <button class="add" onclick="add()">➕ Add Student</button>
+    </div>
+    <div class="filter"><select id="courseFilter" onchange="filterByCourse()"><option value="">All Courses</option></select></div>
+    <div class="search-box">
+      <input id="search" placeholder="🔍 Search students…" oninput="searchLive()">
+      <button class="show" onclick="load()">Show All</button>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Course</th><th>Actions</th></tr></thead><tbody id="table"></tbody></table></div>
+    <div id="totalCount" style="margin-top:10px;font-size:13px;color:var(--sub);"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <div id="teachersView" class="hidden">
+    <div class="card form" style="margin-bottom:16px;">
+      <input id="tname" placeholder="Teacher Name">
+      <input id="temail" placeholder="Email">
+      <input id="tcourse" placeholder="Assigned Course">
+      <button class="add" onclick="addTeacher()">➕ Add Teacher</button>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Course</th><th>Actions</th></tr></thead><tbody id="teacherTable"></tbody></table></div>
+  </div>
+
+  <div id="coursesView" class="hidden">
+    <div class="card form" style="margin-bottom:16px;">
+      <input id="cname" placeholder="Course Name">
+      <input id="cinstructor" placeholder="Instructor">
+      <input id="cduration" placeholder="Duration">
+      <button class="add" onclick="addCourse()">➕ Add Course</button>
+    </div>
+    <div class="search-box"><input id="courseSearch" placeholder="🔍 Search courses…" oninput="searchCourseLive()"><button class="show" onclick="loadCourses()">Show All</button></div>
+    <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Name</th><th>Instructor</th><th>Duration</th><th>Actions</th></tr></thead><tbody id="courseTable"></tbody></table></div>
+    <div class="pagination" id="coursePagination"></div>
+  </div>
+
+  <div id="departmentsView" class="hidden">
+    <div class="card form" style="margin-bottom:16px;">
+      <input id="dname" placeholder="Department Name">
+      <input id="dprogram" placeholder="Program Name">
+      <input id="dduration" placeholder="Duration">
+      <button class="add" onclick="addDepartment()">➕ Add Department</button>
+    </div>
+    <div class="search-box"><input id="departmentSearch" placeholder="🔍 Search departments…" oninput="searchDepartmentLive()"><button class="show" onclick="loadDepartments()">Show All</button></div>
+    <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Department</th><th>Program</th><th>Duration</th><th>Actions</th></tr></thead><tbody id="departmentTable"></tbody></table></div>
+    <div class="pagination" id="departmentPagination"></div>
+  </div>
+
+  <div id="enrollmentsView" class="hidden">
+    <div class="card form" style="margin-bottom:16px;">
+      <select id="enrollStudent"></select>
+      <select id="enrollCourse"></select>
+      <button class="add" onclick="addEnrollment()">➕ Assign Student</button>
+    </div>
+    <div class="search-box"><input id="enrollmentSearch" placeholder="🔍 Search enrollments…" oninput="searchEnrollmentLive()"><button class="show" onclick="loadEnrollments()">Show All</button></div>
+    <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Student</th><th>Course</th><th>Actions</th></tr></thead><tbody id="enrollmentTable"></tbody></table></div>
+    <div class="pagination" id="enrollmentPagination"></div>
+  </div>
+
+  <div id="allocationsView" class="hidden">
+    <div class="card form" style="margin-bottom:16px;">
+      <select id="allocTeacher"></select>
+      <select id="allocCourse"></select>
+      <button class="add" onclick="addAllocation()">➕ Allocate Teacher</button>
+    </div>
+    <div class="search-box"><input id="allocationSearch" placeholder="🔍 Search allocations…" oninput="searchAllocationLive()"><button class="show" onclick="loadAllocations()">Show All</button></div>
+    <div class="tbl-wrap"><table><thead><tr><th>#</th><th>Teacher</th><th>Course</th><th>Actions</th></tr></thead><tbody id="allocationTable"></tbody></table></div>
+    <div class="pagination" id="allocationPagination"></div>
+  </div>
+
+  <div id="timetableView" class="hidden">
+    <div class="timetable-controls">
+      <select id="semesterSelect" class="semester-select" onchange="loadTimetable()">
+        <option value="">All Semesters</option>
+        <option value="Fall 2026">Fall 2026</option>
+        <option value="Spring 2026">Spring 2026</option>
+        <option value="Summer 2026">Summer 2026</option>
+      </select>
+      <select id="daySelect" class="day-select" onchange="renderTimetable()">
+        <option value="">All Days</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+      </select>
+      <button class="add" onclick="openTimetableModal()">➕ Add Class</button>
+    </div>
+    <div class="timetable-grid" id="timetableGrid">
+      <div class="time-slot timetable-header"><strong>Time</strong></div>
+      <div class="time-slot timetable-header"><strong>Monday</strong></div>
+      <div class="time-slot timetable-header"><strong>Tuesday</strong></div>
+      <div class="time-slot timetable-header"><strong>Wednesday</strong></div>
+      <div class="time-slot timetable-header"><strong>Thursday</strong></div>
+      <div class="time-slot timetable-header"><strong>Friday</strong></div>
+      <div class="time-slot timetable-header">8:00-9:00</div>
+      <div class="time-slot" data-time="Monday 8:00"></div><div class="time-slot" data-time="Tuesday 8:00"></div><div class="time-slot" data-time="Wednesday 8:00"></div><div class="time-slot" data-time="Thursday 8:00"></div><div class="time-slot" data-time="Friday 8:00"></div>
+      <div class="time-slot timetable-header">9:00-10:00</div>
+      <div class="time-slot" data-time="Monday 9:00"></div><div class="time-slot" data-time="Tuesday 9:00"></div><div class="time-slot" data-time="Wednesday 9:00"></div><div class="time-slot" data-time="Thursday 9:00"></div><div class="time-slot" data-time="Friday 9:00"></div>
+      <div class="time-slot timetable-header">10:00-11:00</div>
+      <div class="time-slot" data-time="Monday 10:00"></div><div class="time-slot" data-time="Tuesday 10:00"></div><div class="time-slot" data-time="Wednesday 10:00"></div><div class="time-slot" data-time="Thursday 10:00"></div><div class="time-slot" data-time="Friday 10:00"></div>
+      <div class="time-slot timetable-header">11:00-12:00</div>
+      <div class="time-slot" data-time="Monday 11:00"></div><div class="time-slot" data-time="Tuesday 11:00"></div><div class="time-slot" data-time="Wednesday 11:00"></div><div class="time-slot" data-time="Thursday 11:00"></div><div class="time-slot" data-time="Friday 11:00"></div>
+      <div class="time-slot timetable-header">12:00-1:00</div>
+      <div class="time-slot" data-time="Monday 12:00"></div><div class="time-slot" data-time="Tuesday 12:00"></div><div class="time-slot" data-time="Wednesday 12:00"></div><div class="time-slot" data-time="Thursday 12:00"></div><div class="time-slot" data-time="Friday 12:00"></div>
+      <div class="time-slot timetable-header">2:00-3:00</div>
+      <div class="time-slot" data-time="Monday 14:00"></div><div class="time-slot" data-time="Tuesday 14:00"></div><div class="time-slot" data-time="Wednesday 14:00"></div><div class="time-slot" data-time="Thursday 14:00"></div><div class="time-slot" data-time="Friday 14:00"></div>
+      <div class="time-slot timetable-header">3:00-4:00</div>
+      <div class="time-slot" data-time="Monday 15:00"></div><div class="time-slot" data-time="Tuesday 15:00"></div><div class="time-slot" data-time="Wednesday 15:00"></div><div class="time-slot" data-time="Thursday 15:00"></div><div class="time-slot" data-time="Friday 15:00"></div>
+    </div>
+    <div class="search-box"><input id="timetableSearch" placeholder="🔍 Search timetable…" oninput="searchTimetableLive()"><button class="show" onclick="loadTimetable()">Show All</button></div>
+    <div class="tbl-wrap"><table id="timetableTable"><thead><tr><th>#</th><th>Semester</th><th>Day</th><th>Time</th><th>Course</th><th>Teacher</th><th>Room</th><th>Actions</th></tr></thead><tbody id="timetableDataTable"></tbody></table></div>
+    <div class="pagination" id="timetablePagination"></div>
+  </div>
+
+  <div id="analyticsView" class="hidden">
+    <div class="card"><canvas id="bigChart"></canvas></div>
+  </div>
+
+  <div id="settingsView" class="hidden">
+    <div class="settings-tabs">
+      <button class="settings-tab-btn active-stab" onclick="switchSettingsTab('semesterTab',this)">📅 Semester / Session</button>
+      <button class="settings-tab-btn" onclick="switchSettingsTab('gradingTab',this)">📊 Grading Rules</button>
+    </div>
+    <div id="semesterTab" class="settings-section active-ssec">
+      <div class="settings-card">
+        <h3>🟢 Current Active Session</h3>
+        <div class="settings-row"><label>Active Semester</label><select id="sysActiveSemester"><option value="Fall 2026">Fall 2026</option><option value="Spring 2026">Spring 2026</option><option value="Summer 2026">Summer 2026</option></select></div>
+        <div class="settings-row"><label>Academic Year</label><input type="text" id="sysAcademicYear" placeholder="e.g. 2025-2026"></div>
+        <div class="settings-row"><label>Session Status</label><select id="sysSessionStatus"><option value="active">Active</option><option value="upcoming">Upcoming</option><option value="closed">Closed</option></select></div>
+        <div class="settings-actions"><button class="save-btn" onclick="saveActiveSession()">💾 Save Active Session</button></div>
+      </div>
+      <div class="settings-card">
+        <h3>➕ Add New Semester</h3>
+        <div class="settings-row"><label>Semester Name</label><input type="text" id="newSemName" placeholder="e.g. Fall 2027"></div>
+        <div class="settings-row"><label>Start Date</label><input type="date" id="newSemStart"></div>
+        <div class="settings-row"><label>End Date</label><input type="date" id="newSemEnd"></div>
+        <div class="settings-row"><label>Registration Deadline</label><input type="date" id="newSemRegDeadline"></div>
+        <div class="settings-row"><label>Status</label><select id="newSemStatus"><option value="upcoming">Upcoming</option><option value="active">Active</option><option value="closed">Closed</option></select></div>
+        <div class="settings-actions"><button class="save-btn" onclick="addSemester()">➕ Add Semester</button></div>
+      </div>
+      <div class="settings-card"><h3>📋 All Semesters</h3><div class="session-list" id="semesterList"></div></div>
+      <div class="settings-card">
+        <h3>🗓️ Enrollment Window</h3>
+        <div class="settings-row"><label>Enrollment Opens</label><input type="date" id="enrollOpen"></div>
+        <div class="settings-row"><label>Enrollment Closes</label><input type="date" id="enrollClose"></div>
+        <div class="settings-row"><label>Late Enrollment Allowed</label><select id="lateEnroll"><option value="yes">Yes</option><option value="no">No</option></select></div>
+        <div class="settings-row"><label>Late Fee ($)</label><input type="number" id="lateFee" placeholder="e.g. 50"></div>
+        <div class="settings-actions"><button class="save-btn" onclick="saveEnrollmentWindow()">💾 Save Enrollment Window</button></div>
+      </div>
+    </div>
+    <div id="gradingTab" class="settings-section">
+      <div class="settings-card">
+        <h3>🎯 Grading Scale <span class="scale-badge" id="scaleTypeBadge">Letter</span></h3>
+        <div class="settings-row"><label>Scale Type</label><select id="gradeScaleType" onchange="updateScaleBadge()"><option value="letter">Letter Grade (A, B, C…)</option><option value="percentage">Percentage (0–100)</option><option value="gpa">GPA (0.0–4.0)</option><option value="points">Points Based</option></select></div>
+        <div class="settings-row"><label>Passing Mark (%)</label><input type="number" id="passingMark" placeholder="e.g. 50"></div>
+        <div class="settings-row"><label>Max GPA</label><input type="number" id="maxGPA" placeholder="e.g. 4.0" step="0.1"></div>
+        <div class="settings-row"><label>Grade Rounding</label><select id="gradeRounding"><option value="none">No Rounding</option><option value="up">Round Up</option><option value="down">Round Down</option><option value="nearest">Round to Nearest</option></select></div>
+        <div class="settings-actions"><button class="save-btn" onclick="saveGradeScale()">💾 Save Scale Settings</button></div>
+      </div>
+      <div class="settings-card">
+        <h3>📐 Grade Boundaries</h3>
+        <div class="grading-table-wrap"><table class="grading-table"><thead><tr><th>Grade</th><th>Min %</th><th>Max %</th><th>GPA Points</th><th>Remark</th><th>Action</th></tr></thead><tbody id="gradeBoundaryBody"></tbody></table></div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="add" onclick="addGradeBoundaryRow()">➕ Add Row</button>
+          <button class="save-btn" onclick="saveGradeBoundaries()">💾 Save Boundaries</button>
+          <button class="reset-btn" onclick="resetDefaultBoundaries()">↩️ Reset Default</button>
+        </div>
+      </div>
+      <div class="settings-card">
+        <h3>⚖️ Assessment Weightage</h3>
+        <div class="settings-row"><label>Assignments (%)</label><input type="number" id="wAssignment" placeholder="e.g. 20" oninput="updateWeightTotal()"></div>
+        <div class="settings-row"><label>Quizzes (%)</label><input type="number" id="wQuiz" placeholder="e.g. 10" oninput="updateWeightTotal()"></div>
+        <div class="settings-row"><label>Midterm (%)</label><input type="number" id="wMidterm" placeholder="e.g. 30" oninput="updateWeightTotal()"></div>
+        <div class="settings-row"><label>Final Exam (%)</label><input type="number" id="wFinal" placeholder="e.g. 40" oninput="updateWeightTotal()"></div>
+        <div style="margin-top:8px;font-size:13px;color:var(--sub);">Total: <strong id="weightTotal">0</strong>%<span id="weightWarning" style="color:#ef4444;display:none;margin-left:8px;">⚠️ Must equal 100%</span><span id="weightOk" style="color:#22c55e;display:none;margin-left:8px;">✅ Good</span></div>
+        <div class="weight-bar"><div class="weight-bar-fill" id="weightBarFill" style="width:0%"></div></div>
+        <div class="settings-actions"><button class="save-btn" onclick="saveWeightage()">💾 Save Weightage</button></div>
+      </div>
+      <div class="settings-card">
+        <h3>🗓️ Attendance Rules</h3>
+        <div class="settings-row"><label>Min Attendance (%)</label><input type="number" id="minAttendance" placeholder="e.g. 75"></div>
+        <div class="settings-row"><label>Counts Toward Grade</label><select id="attendanceInGrade"><option value="yes">Yes</option><option value="no">No</option></select></div>
+        <div class="settings-row"><label>Attendance Weight (%)</label><input type="number" id="wAttendance" placeholder="e.g. 5"></div>
+        <div class="settings-row"><label>Short Attendance Action</label><select id="shortAttAction"><option value="warn">Warn Student</option><option value="fail">Auto Fail</option><option value="restrict">Restrict from Exam</option><option value="none">No Action</option></select></div>
+        <div class="settings-actions"><button class="save-btn" onclick="saveAttendanceRules()">💾 Save Attendance Rules</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="modal" id="modal" style="display:none"><div class="modal-content"><h3>✏️ Edit Student</h3><input id="editName" placeholder="Name"><input id="editEmail" placeholder="Email"><input id="editCourse" placeholder="Course"><div class="modal-footer"><button class="show" onclick="closeModal()">Cancel</button><button class="add" onclick="updateStudent()">Save</button></div></div></div>
+<div class="modal" id="courseModal" style="display:none"><div class="modal-content"><h3>✏️ Edit Course</h3><input id="editCourseName" placeholder="Course Name"><input id="editCourseInstructor" placeholder="Instructor"><input id="editCourseDuration" placeholder="Duration"><div class="modal-footer"><button class="show" onclick="closeCourseModal()">Cancel</button><button class="add" onclick="updateCourse()">Save</button></div></div></div>
+<div class="modal" id="departmentModal" style="display:none"><div class="modal-content"><h3>✏️ Edit Department</h3><input id="editDepartmentName" placeholder="Department Name"><input id="editDepartmentProgram" placeholder="Program Name"><input id="editDepartmentDuration" placeholder="Duration"><div class="modal-footer"><button class="show" onclick="closeDepartmentModal()">Cancel</button><button class="add" onclick="updateDepartment()">Save</button></div></div></div>
+<div class="modal" id="enrollmentModal" style="display:none"><div class="modal-content"><h3>✏️ Edit Enrollment</h3><select id="editEnrollStudent"></select><select id="editEnrollCourse"></select><div class="modal-footer"><button class="show" onclick="closeEnrollmentModal()">Cancel</button><button class="add" onclick="updateEnrollment()">Save</button></div></div></div>
+<div class="modal" id="allocationModal" style="display:none"><div class="modal-content"><h3>✏️ Edit Allocation</h3><select id="editAllocTeacher"></select><select id="editAllocCourse"></select><div class="modal-footer"><button class="show" onclick="closeAllocationModal()">Cancel</button><button class="add" onclick="updateAllocation()">Save</button></div></div></div>
+<div class="modal" id="timetableModal" style="display:none"><div class="modal-content"><h3 id="timetableModalTitle">Add Class</h3><select id="timetableSemester"></select><select id="timetableDay"><option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option></select><select id="timetableTime"><option value="8:00">8:00-9:00</option><option value="9:00">9:00-10:00</option><option value="10:00">10:00-11:00</option><option value="11:00">11:00-12:00</option><option value="12:00">12:00-1:00</option><option value="14:00">2:00-3:00</option><option value="15:00">3:00-4:00</option></select><select id="timetableCourse"></select><select id="timetableTeacher"></select><input id="timetableRoom" placeholder="Room (e.g., A-101)"><div class="modal-footer"><button class="show" onclick="closeTimetableModal()">Cancel</button><button class="add" id="timetableSaveBtn" onclick="saveTimetable()">Save</button></div></div></div>
+<div class="modal" id="editSemesterModal" style="display:none"><div class="modal-content"><h3>✏️ Edit Semester</h3><input id="editSemName" placeholder="Semester Name"><input type="date" id="editSemStart"><input type="date" id="editSemEnd"><input type="date" id="editSemRegDeadline"><select id="editSemStatus"><option value="upcoming">Upcoming</option><option value="active">Active</option><option value="closed">Closed</option></select><div class="modal-footer"><button class="show" onclick="document.getElementById('editSemesterModal').style.display='none'">Cancel</button><button class="save-btn" onclick="saveEditSemester()">💾 Save</button></div></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let token=null;
+try{token=localStorage.getItem("token")||sessionStorage.getItem("token");}catch(e){token=null;}
+const API="http://localhost:3000/students";
+const TAPI="http://localhost:3000/teachers";
+const CAPI="http://localhost:3000/courses";
+const DAPI="http://localhost:3000/departments";
+const EAPI="http://localhost:3000/enrollments";
+const AAPI="http://localhost:3000/allocations";
+const TTAPI="http://localhost:3000/timetabless";
+if(!token){window.location.href="/adminlogin.html";}
+let students=[],teachers=[],courses=[],departments=[],enrollments=[],allocations=[],timetables=[];
+let currentPage=1,editId=null,courseEditId=null,departmentEditId=null,chart=null,bigChart=null,currentTab="dashboard",activeLink=null,chartType="bar";
+let courseCurrentPage=1,departmentCurrentPage=1,enrollmentCurrentPage=1,enrollmentEditId=null,allocationCurrentPage=1,allocationEditId=null,timetableCurrentPage=1,timetableEditId=null;
+const qs=id=>document.getElementById(id);
+setInterval(()=>{qs("clock").innerText=new Date().toLocaleString();},1000);
+function toggleTheme(){document.body.classList.toggle("light");}
+function toast(msg){let t=qs("toast");t.innerText=msg;t.className="toast show";setTimeout(()=>t.className="toast",2500);}
+function logout(){try{localStorage.removeItem("token");sessionStorage.removeItem("token");}catch(e){}window.location.href="/adminlogin.html";}
+function setTab(tab,el){
+  currentTab=tab;
+  if(activeLink)activeLink.classList.remove("active");
+  if(el){el.classList.add("active");activeLink=el;}
+  ["dashboardView","studentsView","teachersView","coursesView","departmentsView","enrollmentsView","allocationsView","timetableView","analyticsView","settingsView"].forEach(v=>qs(v).classList.add("hidden"));
+  if(tab==="dashboard")qs("dashboardView").classList.remove("hidden");
+  if(tab==="students"){qs("studentsView").classList.remove("hidden");load();}
+  if(tab==="teachers"){qs("teachersView").classList.remove("hidden");loadTeachers();}
+  if(tab==="courses"){qs("coursesView").classList.remove("hidden");loadCourses();}
+  if(tab==="departments"){qs("departmentsView").classList.remove("hidden");loadDepartments();}
+  if(tab==="enrollments"){qs("enrollmentsView").classList.remove("hidden");loadEnrollments();}
+  if(tab==="allocations"){qs("allocationsView").classList.remove("hidden");loadAllocations();}
+  if(tab==="timetable"){qs("timetableView").classList.remove("hidden");loadTimetable();}
+  if(tab==="analytics"){qs("analyticsView").classList.remove("hidden");bigChartUpdate();}
+  if(tab==="settings"){qs("settingsView").classList.remove("hidden");loadSettingsUI();}
+  qs("viewTitle").innerText=tab.charAt(0).toUpperCase()+tab.slice(1);
+}
+function loadStudentsSelects(){qs("courseFilter").innerHTML='<option value="">All Courses</option>'+courses.map(c=>`<option value="${c.name}">${c.name}</option>`).join("");qs("enrollStudent").innerHTML='<option value="">Select Student</option>'+students.map(s=>`<option value="${s.id}">${s.name} (${s.course||"No Course"})</option>`).join("");qs("editEnrollStudent").innerHTML='<option value="">Select Student</option>'+students.map(s=>`<option value="${s.id}">${s.name} (${s.course||"No Course"})</option>`).join("");}
+function load(){fetch(API,{headers:{Authorization:token}}).then(r=>r.json()).then(data=>{students=Array.isArray(data)?data:[];renderStudents();loadStudentsSelects();updateDashboard();});}
+function renderStudents(list=null){let data=list||students;qs("table").innerHTML="";let perPage=5,start=(currentPage-1)*perPage;data.slice(start,start+perPage).forEach((s,i)=>{qs("table").innerHTML+=`<tr><td>${start+i+1}</td><td>${s.name||"-"}</td><td>${s.email||"-"}</td><td>${s.course||"-"}</td><td><button class="edit" onclick="editStudent(${s.id})">✏️</button> <button class="delete" onclick="deleteStudent(${s.id})">🗑️</button></td></tr>`;});qs("pagination").innerHTML="";let pages=Math.ceil(data.length/5);if(pages>1)for(let i=1;i<=pages;i++)qs("pagination").innerHTML+=`<button class="page-btn" onclick="goStudent(${i})">${i}</button>`;qs("totalCount").innerText=`Total: ${data.length} students`;}
+function goStudent(p){currentPage=p;renderStudents();}
+function add(){let n=qs("name").value.trim(),e=qs("email").value.trim(),c=qs("course").value.trim();if(!n||!e||!c){toast("Fill all fields");return;}fetch(API,{method:"POST",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({name:n,email:e,course:c})}).then(()=>{qs("name").value="";qs("email").value="";qs("course").value="";load();toast("Student Added");});}
+function deleteStudent(id){if(confirm("Delete student?")){fetch(`${API}/${id}`,{method:"DELETE",headers:{Authorization:token}}).then(()=>{load();toast("Deleted");});}}
+function editStudent(id){let s=students.find(x=>x.id==id);if(!s)return;editId=id;qs("editName").value=s.name||"";qs("editEmail").value=s.email||"";qs("editCourse").value=s.course||"";qs("modal").style.display="flex";}
+function closeModal(){qs("modal").style.display="none";}
+function updateStudent(){fetch(`${API}/${editId}`,{method:"PUT",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({name:qs("editName").value,email:qs("editEmail").value,course:qs("editCourse").value})}).then(()=>{closeModal();load();toast("Updated");});}
+function searchLive(){let key=qs("search").value.trim().toLowerCase();if(key===""){renderStudents();return;}renderStudents(students.filter(s=>(s.name||"").toLowerCase().includes(key)||(s.email||"").toLowerCase().includes(key)||(s.course||"").toLowerCase().includes(key)));}
+function filterByCourse(){let key=qs("courseFilter").value;if(!key){renderStudents();return;}renderStudents(students.filter(s=>(s.course||"")===key));}
+function loadTeachers(){fetch(TAPI,{headers:{Authorization:token}}).then(r=>r.json()).then(data=>{teachers=Array.isArray(data)?data:[];renderTeachers();populateAllocationSelects();populateTimetableSelects();updateDashboard();});}
+function renderTeachers(){qs("teacherTable").innerHTML="";teachers.forEach((t,i)=>{qs("teacherTable").innerHTML+=`<tr><td>${i+1}</td><td>${t.name||"-"}</td><td>${t.email||"-"}</td><td>${t.course||"-"}</td><td><button class="edit" onclick="editTeacher(${t.id})">✏️</button> <button class="delete" onclick="deleteTeacher(${t.id})">🗑️</button></td></tr>`;});}
+function addTeacher(){let n=qs("tname").value.trim(),e=qs("temail").value.trim(),c=qs("tcourse").value.trim();if(!n||!e||!c){toast("Fill all fields");return;}fetch(TAPI,{method:"POST",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({name:n,email:e,course:c})}).then(()=>{qs("tname").value="";qs("temail").value="";qs("tcourse").value="";loadTeachers();toast("Teacher Added");});}
+function deleteTeacher(id){if(confirm("Delete Teacher?")){fetch(`${TAPI}/${id}`,{method:"DELETE",headers:{Authorization:token}}).then(()=>{loadTeachers();toast("Deleted");});}}
+function editTeacher(id){let t=teachers.find(x=>x.id==id);if(!t)return;let name=prompt("Edit Name",t.name);if(name===null)return;let email=prompt("Edit Email",t.email);if(email===null)return;let course=prompt("Edit Course",t.course);if(course===null)return;fetch(`${TAPI}/${id}`,{method:"PUT",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({name,email,course})}).then(()=>{loadTeachers();toast("Updated");});}
+function loadCourses(){fetch(CAPI,{headers:{Authorization:token}}).then(r=>r.json()).then(data=>{courses=Array.isArray(data)?data:[];courseCurrentPage=1;renderCourses();populateEnrollmentSelects();populateAllocationSelects();populateTimetableSelects();updateDashboard();});}
+function renderCourses(list=null){let data=list||courses;qs("courseTable").innerHTML="";let perPage=5,start=(courseCurrentPage-1)*perPage;data.slice(start,start+perPage).forEach((c,i)=>{qs("courseTable").innerHTML+=`<tr><td>${start+i+1}</td><td>${c.name||"-"}</td><td>${c.instructor||"-"}</td><td>${c.duration||"-"}</td><td><button class="edit" onclick="openCourseModal(${c.id})">✏️</button> <button class="delete" onclick="deleteCourse(${c.id})">🗑️</button></td></tr>`;});qs("coursePagination").innerHTML="";let pages=Math.ceil(data.length/5);if(pages>1)for(let i=1;i<=pages;i++)qs("coursePagination").innerHTML+=`<button class="page-btn" onclick="goCourse(${i})">${i}</button>`;}
+function goCourse(p){courseCurrentPage=p;renderCourses();}
+function addCourse(){let n=qs("cname").value.trim(),i=qs("cinstructor").value.trim(),d=qs("cduration").value.trim();if(!n||!i||!d){toast("Fill all fields");return;}fetch(CAPI,{method:"POST",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({name:n,instructor:i,duration:d})}).then(()=>{qs("cname").value="";qs("cinstructor").value="";qs("cduration").value="";loadCourses();toast("Course Added");});}
+function deleteCourse(id){if(confirm("Delete Course?")){fetch(`${CAPI}/${id}`,{method:"DELETE",headers:{Authorization:token}}).then(()=>{loadCourses();toast("Deleted");});}}
+function openCourseModal(id){courseEditId=id;let c=courses.find(x=>x.id==id);if(!c)return;qs("editCourseName").value=c.name||"";qs("editCourseInstructor").value=c.instructor||"";qs("editCourseDuration").value=c.duration||"";qs("courseModal").style.display="flex";}
+function closeCourseModal(){qs("courseModal").style.display="none";}
+function updateCourse(){fetch(`${CAPI}/${courseEditId}`,{method:"PUT",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({name:qs("editCourseName").value,instructor:qs("editCourseInstructor").value,duration:qs("editCourseDuration").value})}).then(()=>{closeCourseModal();loadCourses();toast("Updated");});}
+function searchCourseLive(){let key=qs("courseSearch").value.trim().toLowerCase();if(key===""){loadCourses();return;}renderCourses(courses.filter(c=>(c.name||"").toLowerCase().includes(key)||(c.instructor||"").toLowerCase().includes(key)||(c.duration||"").toLowerCase().includes(key)));}
+function loadDepartments(){fetch(DAPI,{headers:{Authorization:token}}).then(r=>r.json()).then(data=>{departments=Array.isArray(data)?data:[];departmentCurrentPage=1;renderDepartments();});}
+function renderDepartments(list=null){let data=list||departments;qs("departmentTable").innerHTML="";let perPage=5,start=(departmentCurrentPage-1)*perPage;data.slice(start,start+perPage).forEach((d,i)=>{qs("departmentTable").innerHTML+=`<tr><td>${start+i+1}</td><td>${d.name||"-"}</td><td>${d.program||"-"}</td><td>${d.duration||"-"}</td><td><button class="edit" onclick="openDepartmentModal(${d.id})">✏️</button> <button class="delete" onclick="deleteDepartment(${d.id})">🗑️</button></td></tr>`;});qs("departmentPagination").innerHTML="";let pages=Math.ceil(data.length/5);if(pages>1)for(let i=1;i<=pages;i++)qs("departmentPagination").innerHTML+=`<button class="page-btn" onclick="goDepartment(${i})">${i}</button>`;}
+function goDepartment(p){departmentCurrentPage=p;renderDepartments();}
+function addDepartment(){let n=qs("dname").value.trim(),p=qs("dprogram").value.trim(),d=qs("dduration").value.trim();if(!n||!p||!d){toast("Fill all fields");return;}fetch(DAPI,{method:"POST",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({name:n,program:p,duration:d})}).then(()=>{qs("dname").value="";qs("dprogram").value="";qs("dduration").value="";loadDepartments();toast("Department Added");});}
+function deleteDepartment(id){if(confirm("Delete Department?")){fetch(`${DAPI}/${id}`,{method:"DELETE",headers:{Authorization:token}}).then(()=>{loadDepartments();toast("Deleted");});}}
+function openDepartmentModal(id){departmentEditId=id;let d=departments.find(x=>x.id==id);if(!d)return;qs("editDepartmentName").value=d.name||"";qs("editDepartmentProgram").value=d.program||"";qs("editDepartmentDuration").value=d.duration||"";qs("departmentModal").style.display="flex";}
+function closeDepartmentModal(){qs("departmentModal").style.display="none";}
+function updateDepartment(){fetch(`${DAPI}/${departmentEditId}`,{method:"PUT",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({name:qs("editDepartmentName").value,program:qs("editDepartmentProgram").value,duration:qs("editDepartmentDuration").value})}).then(()=>{closeDepartmentModal();loadDepartments();toast("Updated");});}
+function searchDepartmentLive(){let key=qs("departmentSearch").value.trim().toLowerCase();if(key===""){loadDepartments();return;}renderDepartments(departments.filter(d=>(d.name||"").toLowerCase().includes(key)||(d.program||"").toLowerCase().includes(key)||(d.duration||"").toLowerCase().includes(key)));}
+function populateEnrollmentSelects(){qs("enrollStudent").innerHTML='<option value="">Select Student</option>'+students.map(s=>`<option value="${s.id}">${s.name} (${s.course||"No Course"})</option>`).join("");qs("enrollCourse").innerHTML='<option value="">Select Course</option>'+courses.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");qs("editEnrollStudent").innerHTML='<option value="">Select Student</option>'+students.map(s=>`<option value="${s.id}">${s.name} (${s.course||"No Course"})</option>`).join("");qs("editEnrollCourse").innerHTML='<option value="">Select Course</option>'+courses.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");}
+function loadEnrollments(){fetch(EAPI,{headers:{Authorization:token}}).then(r=>r.json()).then(data=>{enrollments=Array.isArray(data)?data:[];enrollmentCurrentPage=1;renderEnrollments();});}
+function renderEnrollments(list=null){let data=list||enrollments;qs("enrollmentTable").innerHTML="";let perPage=5,start=(enrollmentCurrentPage-1)*perPage;data.slice(start,start+perPage).forEach((e,i)=>{let sn=e.studentName||e.student?.name||"-",cn=e.courseName||e.course?.name||"-";qs("enrollmentTable").innerHTML+=`<tr><td>${start+i+1}</td><td>${sn}</td><td>${cn}</td><td><button class="edit" onclick="openEnrollmentModal(${e.id})">✏️</button> <button class="delete" onclick="deleteEnrollment(${e.id})">🗑️</button></td></tr>`;});qs("enrollmentPagination").innerHTML="";let pages=Math.ceil(data.length/5);if(pages>1)for(let i=1;i<=pages;i++)qs("enrollmentPagination").innerHTML+=`<button class="page-btn" onclick="goEnrollment(${i})">${i}</button>`;}
+function goEnrollment(p){enrollmentCurrentPage=p;renderEnrollments();}
+function addEnrollment(){let sid=qs("enrollStudent").value,cid=qs("enrollCourse").value;if(!sid||!cid){toast("Select student and course");return;}fetch(EAPI,{method:"POST",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({studentId:sid,courseId:cid})}).then(()=>{loadEnrollments();load();toast("Enrollment Saved");});}
+function deleteEnrollment(id){if(confirm("Delete enrollment?")){fetch(`${EAPI}/${id}`,{method:"DELETE",headers:{Authorization:token}}).then(()=>{loadEnrollments();toast("Deleted");});}}
+function openEnrollmentModal(id){enrollmentEditId=id;let e=enrollments.find(x=>x.id==id);if(!e)return;qs("editEnrollStudent").value=e.student_id||e.studentId||"";qs("editEnrollCourse").value=e.course_id||e.courseId||"";qs("enrollmentModal").style.display="flex";}
+function closeEnrollmentModal(){qs("enrollmentModal").style.display="none";}
+function updateEnrollment(){let sid=qs("editEnrollStudent").value,cid=qs("editEnrollCourse").value;if(!sid||!cid){toast("Select student and course");return;}fetch(`${EAPI}/${enrollmentEditId}`,{method:"PUT",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({studentId:sid,courseId:cid})}).then(()=>{closeEnrollmentModal();loadEnrollments();toast("Enrollment Updated");});}
+function searchEnrollmentLive(){let key=qs("enrollmentSearch").value.trim().toLowerCase();if(key===""){loadEnrollments();return;}renderEnrollments(enrollments.filter(e=>((e.studentName||"").toLowerCase().includes(key))||((e.courseName||"").toLowerCase().includes(key))));}
+function populateAllocationSelects(){qs("allocTeacher").innerHTML='<option value="">Select Teacher</option>'+teachers.map(t=>`<option value="${t.id}">${t.name}</option>`).join("");qs("allocCourse").innerHTML='<option value="">Select Course</option>'+courses.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");qs("editAllocTeacher").innerHTML='<option value="">Select Teacher</option>'+teachers.map(t=>`<option value="${t.id}">${t.name}</option>`).join("");qs("editAllocCourse").innerHTML='<option value="">Select Course</option>'+courses.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");}
+function loadAllocations(){fetch(AAPI,{headers:{Authorization:token}}).then(r=>r.json()).then(data=>{allocations=Array.isArray(data)?data:[];allocationCurrentPage=1;renderAllocations();populateAllocationSelects();});}
+function renderAllocations(list=null){let data=list||allocations;qs("allocationTable").innerHTML="";let perPage=5,start=(allocationCurrentPage-1)*perPage;data.slice(start,start+perPage).forEach((a,i)=>{let tn=a.teacherName||a.teacher?.name||"-",cn=a.courseName||a.course?.name||"-";qs("allocationTable").innerHTML+=`<tr><td>${start+i+1}</td><td>${tn}</td><td>${cn}</td><td><button class="edit" onclick="openAllocationModal(${a.id})">✏️</button> <button class="delete" onclick="deleteAllocation(${a.id})">🗑️</button></td></tr>`;});qs("allocationPagination").innerHTML="";let pages=Math.ceil(data.length/5);if(pages>1)for(let i=1;i<=pages;i++)qs("allocationPagination").innerHTML+=`<button class="page-btn" onclick="goAllocation(${i})">${i}</button>`;}
+function goAllocation(p){allocationCurrentPage=p;renderAllocations();}
+function addAllocation(){let tid=qs("allocTeacher").value,cid=qs("allocCourse").value;if(!tid||!cid){toast("Select teacher and course");return;}fetch(AAPI,{method:"POST",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({teacherId:tid,courseId:cid})}).then(()=>{loadAllocations();toast("Allocation Saved");});}
+function deleteAllocation(id){if(confirm("Delete allocation?")){fetch(`${AAPI}/${id}`,{method:"DELETE",headers:{Authorization:token}}).then(()=>{loadAllocations();toast("Deleted");});}}
+function openAllocationModal(id){allocationEditId=id;let a=allocations.find(x=>x.id==id);if(!a)return;qs("editAllocTeacher").value=a.teacher_id||a.teacherId||"";qs("editAllocCourse").value=a.course_id||a.courseId||"";qs("allocationModal").style.display="flex";}
+function closeAllocationModal(){qs("allocationModal").style.display="none";}
+function updateAllocation(){let tid=qs("editAllocTeacher").value,cid=qs("editAllocCourse").value;if(!tid||!cid){toast("Select teacher and course");return;}fetch(`${AAPI}/${allocationEditId}`,{method:"PUT",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({teacherId:tid,courseId:cid})}).then(()=>{closeAllocationModal();loadAllocations();toast("Allocation Updated");});}
+function searchAllocationLive(){let key=qs("allocationSearch").value.trim().toLowerCase();if(key===""){loadAllocations();return;}renderAllocations(allocations.filter(a=>((a.teacherName||"").toLowerCase().includes(key))||((a.courseName||"").toLowerCase().includes(key))));}
+function populateTimetableSelects(){qs("timetableCourse").innerHTML='<option value="">Select Course</option>'+courses.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");qs("timetableTeacher").innerHTML='<option value="">Select Teacher</option>'+teachers.map(t=>`<option value="${t.id}">${t.name}</option>`).join("");qs("timetableSemester").innerHTML='<option value="">Select Semester</option><option value="Fall 2026">Fall 2026</option><option value="Spring 2026">Spring 2026</option><option value="Summer 2026">Summer 2026</option>';}
+function loadTimetable(){fetch(TTAPI,{headers:{Authorization:token}}).then(r=>r.json()).then(data=>{timetables=Array.isArray(data)?data:[];timetableCurrentPage=1;renderTimetable();renderTimetableTable();}).catch(err=>console.error(err));}
+function renderTimetable(){const grid=qs("timetableGrid");const slots=grid.querySelectorAll(".time-slot:not(.timetable-header)");const sf=qs("semesterSelect").value,df=qs("daySelect").value;slots.forEach(slot=>{const tk=slot.dataset.time;if(!tk)return;slot.innerHTML="";const[day,time]=tk.split(" ");let filtered=timetables.filter(tt=>tt.day===day&&tt.time===time&&(!sf||tt.semester===sf)&&(!df||tt.day===df));filtered.forEach(tt=>{const course=courses.find(c=>c.id==tt.courseId||c.id==tt.course_id);const teacher=teachers.find(t=>t.id==tt.teacherId||t.id==tt.teacher_id);slot.innerHTML+=`<div class="class-info"><div class="class-course">${course?course.name:(tt.courseName||"Unknown")}</div><div class="class-teacher">${teacher?teacher.name:(tt.teacherName||"Unknown")}</div><div style="font-size:10px;color:var(--sub)">${tt.room||"-"}</div><button class="edit" style="font-size:10px;padding:2px 6px;margin-top:2px" onclick="openTimetableModal(${tt.id})">✏️</button><button class="delete" style="font-size:10px;padding:2px 6px" onclick="deleteTimetable(${tt.id})">🗑️</button></div>`;});if(slot.innerHTML==="")slot.innerHTML='<div style="opacity:0.3;font-size:11px;text-align:center;padding-top:8px;">Free</div>';});}
+function renderTimetableTable(list=null){let data=list||timetables;qs("timetableDataTable").innerHTML="";let perPage=10,start=(timetableCurrentPage-1)*perPage;data.slice(start,start+perPage).forEach((tt,i)=>{const course=courses.find(c=>c.id==tt.courseId||c.id==tt.course_id);const teacher=teachers.find(t=>t.id==tt.teacherId||t.id==tt.teacher_id);qs("timetableDataTable").innerHTML+=`<tr><td>${start+i+1}</td><td>${tt.semester||"-"}</td><td>${tt.day||"-"}</td><td>${tt.time||"-"}</td><td>${course?course.name:(tt.courseName||"-")}</td><td>${teacher?teacher.name:(tt.teacherName||"-")}</td><td>${tt.room||"-"}</td><td><button class="edit" onclick="openTimetableModal(${tt.id})">✏️</button> <button class="delete" onclick="deleteTimetable(${tt.id})">🗑️</button></td></tr>`;});qs("timetablePagination").innerHTML="";let pages=Math.ceil(data.length/10);if(pages>1)for(let i=1;i<=pages;i++)qs("timetablePagination").innerHTML+=`<button class="page-btn" onclick="goTimetable(${i})">${i}</button>`;}
+function goTimetable(p){timetableCurrentPage=p;renderTimetableTable();renderTimetable();}
+function openTimetableModal(id=null){timetableEditId=id;populateTimetableSelects();if(id){const tt=timetables.find(x=>x.id==id);if(!tt)return;qs("timetableModalTitle").innerText="Edit Class";qs("timetableSemester").value=tt.semester||"";qs("timetableDay").value=tt.day||"Monday";qs("timetableTime").value=tt.time||"8:00";qs("timetableCourse").value=tt.courseId||tt.course_id||"";qs("timetableTeacher").value=tt.teacherId||tt.teacher_id||"";qs("timetableRoom").value=tt.room||"";qs("timetableSaveBtn").onclick=updateTimetable;}else{qs("timetableModalTitle").innerText="Add Class";qs("timetableSemester").value="";qs("timetableDay").value="Monday";qs("timetableTime").value="8:00";qs("timetableCourse").value="";qs("timetableTeacher").value="";qs("timetableRoom").value="";qs("timetableSaveBtn").onclick=saveTimetable;}qs("timetableModal").style.display="flex";}
+function closeTimetableModal(){qs("timetableModal").style.display="none";}
+function saveTimetable(){let semester=qs("timetableSemester").value,day=qs("timetableDay").value,time=qs("timetableTime").value,courseId=qs("timetableCourse").value,teacherId=qs("timetableTeacher").value,room=qs("timetableRoom").value.trim();if(!semester||!day||!time||!courseId||!teacherId){toast("Fill all required fields");return;}fetch(TTAPI,{method:"POST",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({semester,day,time,courseId,teacherId,room})}).then(r=>r.json()).then(data=>{if(data.success===false){toast(data.message||"Error saving");return;}closeTimetableModal();loadTimetable();toast("Class Added");}).catch(()=>toast("Error saving class"));}
+function updateTimetable(){let semester=qs("timetableSemester").value,day=qs("timetableDay").value,time=qs("timetableTime").value,courseId=qs("timetableCourse").value,teacherId=qs("timetableTeacher").value,room=qs("timetableRoom").value.trim();if(!semester||!day||!time||!courseId||!teacherId){toast("Fill all required fields");return;}fetch(`${TTAPI}/${timetableEditId}`,{method:"PUT",headers:{"Content-Type":"application/json",Authorization:token},body:JSON.stringify({semester,day,time,courseId,teacherId,room})}).then(r=>r.json()).then(data=>{if(data.success===false){toast(data.message||"Error updating");return;}closeTimetableModal();loadTimetable();toast("Class Updated");}).catch(()=>toast("Error updating class"));}
+function deleteTimetable(id){if(confirm("Delete class?")){fetch(`${TTAPI}/${id}`,{method:"DELETE",headers:{Authorization:token}}).then(()=>{loadTimetable();toast("Deleted");});}}
+function searchTimetableLive(){let key=qs("timetableSearch").value.trim().toLowerCase();if(key===""){renderTimetableTable();renderTimetable();return;}renderTimetableTable(timetables.filter(tt=>((tt.semester||"").toLowerCase().includes(key))||((tt.day||"").toLowerCase().includes(key))||((tt.time||"").toLowerCase().includes(key))||((tt.room||"").toLowerCase().includes(key))));}
+function updateDashboard(){qs("kpiTotal").innerText=students.length;qs("kpiCourses").innerText=courses.length;qs("kpiEnrollments").innerText=enrollments.length;let counts={};enrollments.forEach(e=>{let n=e.courseName||e.course?.name;if(n)counts[n]=(counts[n]||0)+1;});let top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];qs("kpiTop").innerText=top?top[0]:"-";}
+function toggleChartType(){chartType=chartType==="bar"?"pie":"bar";bigChartUpdate();}
+function bigChartUpdate(){let ctx=qs("bigChart").getContext("2d");let counts={};enrollments.forEach(e=>{let n=e.courseName||e.course?.name;if(n)counts[n]=(counts[n]||0)+1;});let labels=Object.keys(counts),values=Object.values(counts);if(bigChart)bigChart.destroy();bigChart=new Chart(ctx,{type:chartType,data:{labels,datasets:[{label:"Enrollments",data:values,backgroundColor:["#00c9a7","#4361ee","#f59e0b","#ef4444","#8b5cf6","#06b6d4"]}]},options:{responsive:true,plugins:{legend:{labels:{color:document.body.classList.contains("light")?"#0d1b2a":"#fff"}}}}});}
+let sysSettings={activeSession:{semester:"Fall 2026",academicYear:"",status:"active"},semesters:[],enrollmentWindow:{opens:"",closes:"",lateAllowed:"yes",lateFee:""},gradeScale:{type:"letter",passingMark:"50",maxGPA:"4.0",rounding:"none"},gradeBoundaries:[{grade:"A+",min:95,max:100,gpa:4.0,remark:"Excellent"},{grade:"A",min:90,max:94,gpa:3.7,remark:"Very Good"},{grade:"B+",min:85,max:89,gpa:3.3,remark:"Good"},{grade:"B",min:80,max:84,gpa:3.0,remark:"Above Average"},{grade:"C+",min:75,max:79,gpa:2.7,remark:"Average"},{grade:"C",min:70,max:74,gpa:2.3,remark:"Below Average"},{grade:"D",min:60,max:69,gpa:1.0,remark:"Pass"},{grade:"F",min:0,max:59,gpa:0.0,remark:"Fail"}],weightage:{assignment:20,quiz:10,midterm:30,final:40},attendance:{min:75,inGrade:"yes",weight:5,action:"warn"}};
+function loadSysSettings(){try{let s=localStorage.getItem("sysSettings");if(s)sysSettings=JSON.parse(s);}catch(e){}}
+function saveSysSettings(){try{localStorage.setItem("sysSettings",JSON.stringify(sysSettings));}catch(e){}}
+function loadSettingsUI(){loadSysSettings();qs("sysActiveSemester").value=sysSettings.activeSession.semester||"Fall 2026";qs("sysAcademicYear").value=sysSettings.activeSession.academicYear||"";qs("sysSessionStatus").value=sysSettings.activeSession.status||"active";qs("enrollOpen").value=sysSettings.enrollmentWindow.opens||"";qs("enrollClose").value=sysSettings.enrollmentWindow.closes||"";qs("lateEnroll").value=sysSettings.enrollmentWindow.lateAllowed||"yes";qs("lateFee").value=sysSettings.enrollmentWindow.lateFee||"";qs("gradeScaleType").value=sysSettings.gradeScale.type||"letter";qs("passingMark").value=sysSettings.gradeScale.passingMark||"50";qs("maxGPA").value=sysSettings.gradeScale.maxGPA||"4.0";qs("gradeRounding").value=sysSettings.gradeScale.rounding||"none";updateScaleBadge();renderGradeBoundaries();qs("wAssignment").value=sysSettings.weightage.assignment||"";qs("wQuiz").value=sysSettings.weightage.quiz||"";qs("wMidterm").value=sysSettings.weightage.midterm||"";qs("wFinal").value=sysSettings.weightage.final||"";updateWeightTotal();qs("minAttendance").value=sysSettings.attendance.min||"";qs("attendanceInGrade").value=sysSettings.attendance.inGrade||"yes";qs("wAttendance").value=sysSettings.attendance.weight||"";qs("shortAttAction").value=sysSettings.attendance.action||"warn";renderSemesterList();}
+function switchSettingsTab(tabId,btn){document.querySelectorAll(".settings-section").forEach(s=>s.classList.remove("active-ssec"));document.querySelectorAll(".settings-tab-btn").forEach(b=>b.classList.remove("active-stab"));qs(tabId).classList.add("active-ssec");btn.classList.add("active-stab");}
+function saveActiveSession(){sysSettings.activeSession.semester=qs("sysActiveSemester").value;sysSettings.activeSession.academicYear=qs("sysAcademicYear").value;sysSettings.activeSession.status=qs("sysSessionStatus").value;saveSysSettings();toast("Active session saved ✅");}
+function addSemester(){let name=qs("newSemName").value.trim();if(!name){toast("Enter semester name");return;}sysSettings.semesters.push({id:Date.now(),name,start:qs("newSemStart").value,end:qs("newSemEnd").value,regDeadline:qs("newSemRegDeadline").value,status:qs("newSemStatus").value});saveSysSettings();qs("newSemName").value="";qs("newSemStart").value="";qs("newSemEnd").value="";qs("newSemRegDeadline").value="";qs("newSemStatus").value="upcoming";renderSemesterList();toast("Semester added ✅");}
+let editSemId=null;
+function renderSemesterList(){let list=qs("semesterList");if(!sysSettings.semesters.length){list.innerHTML='<p style="opacity:0.5;font-size:13px;">No semesters added yet.</p>';return;}list.innerHTML=sysSettings.semesters.map(s=>`<div class="session-item"><div class="session-item-info"><strong>${s.name}</strong><span class="session-badge badge-${s.status}">${s.status}</span><span style="opacity:0.6;font-size:12px;">${s.start||"?"}→${s.end||"?"}</span>${s.regDeadline?`<span style="opacity:0.5;font-size:11px;">Reg: ${s.regDeadline}</span>`:""}</div><div class="session-item-actions"><button class="edit" style="font-size:12px;padding:5px 8px" onclick="openEditSemester(${s.id})">✏️</button><button class="delete" style="font-size:12px;padding:5px 8px" onclick="deleteSemester(${s.id})">🗑️</button></div></div>`).join("");}
+function openEditSemester(id){let s=sysSettings.semesters.find(x=>x.id==id);if(!s)return;editSemId=id;qs("editSemName").value=s.name;qs("editSemStart").value=s.start;qs("editSemEnd").value=s.end;qs("editSemRegDeadline").value=s.regDeadline||"";qs("editSemStatus").value=s.status;qs("editSemesterModal").style.display="flex";}
+function saveEditSemester(){let s=sysSettings.semesters.find(x=>x.id==editSemId);if(!s)return;s.name=qs("editSemName").value;s.start=qs("editSemStart").value;s.end=qs("editSemEnd").value;s.regDeadline=qs("editSemRegDeadline").value;s.status=qs("editSemStatus").value;saveSysSettings();qs("editSemesterModal").style.display="none";renderSemesterList();toast("Semester updated ✅");}
+function deleteSemester(id){if(!confirm("Delete this semester?"))return;sysSettings.semesters=sysSettings.semesters.filter(x=>x.id!=id);saveSysSettings();renderSemesterList();toast("Deleted");}
+function saveEnrollmentWindow(){sysSettings.enrollmentWindow={opens:qs("enrollOpen").value,closes:qs("enrollClose").value,lateAllowed:qs("lateEnroll").value,lateFee:qs("lateFee").value};saveSysSettings();toast("Enrollment window saved ✅");}
+function updateScaleBadge(){const map={letter:"Letter",percentage:"Percentage",gpa:"GPA",points:"Points"};qs("scaleTypeBadge").innerText=map[qs("gradeScaleType").value]||"Letter";}
+function saveGradeScale(){sysSettings.gradeScale={type:qs("gradeScaleType").value,passingMark:qs("passingMark").value,maxGPA:qs("maxGPA").value,rounding:qs("gradeRounding").value};saveSysSettings();toast("Scale settings saved ✅");}
+function renderGradeBoundaries(){qs("gradeBoundaryBody").innerHTML=sysSettings.gradeBoundaries.map((b,i)=>`<tr><td><input value="${b.grade}" id="gb_grade_${i}" style="width:55px"></td><td><input type="number" value="${b.min}" id="gb_min_${i}"></td><td><input type="number" value="${b.max}" id="gb_max_${i}"></td><td><input type="number" value="${b.gpa}" id="gb_gpa_${i}" step="0.1"></td><td><input value="${b.remark}" id="gb_rem_${i}" style="width:100px"></td><td><button class="delete" style="font-size:11px;padding:4px 7px" onclick="removeGradeRow(${i})">🗑️</button></td></tr>`).join("");}
+function addGradeBoundaryRow(){sysSettings.gradeBoundaries.push({grade:"",min:0,max:0,gpa:0,remark:""});renderGradeBoundaries();}
+function removeGradeRow(i){sysSettings.gradeBoundaries.splice(i,1);renderGradeBoundaries();}
+function saveGradeBoundaries(){sysSettings.gradeBoundaries=sysSettings.gradeBoundaries.map((_,i)=>({grade:qs(`gb_grade_${i}`).value,min:parseFloat(qs(`gb_min_${i}`).value)||0,max:parseFloat(qs(`gb_max_${i}`).value)||0,gpa:parseFloat(qs(`gb_gpa_${i}`).value)||0,remark:qs(`gb_rem_${i}`).value}));saveSysSettings();toast("Grade boundaries saved ✅");}
+function resetDefaultBoundaries(){if(!confirm("Reset to default boundaries?"))return;sysSettings.gradeBoundaries=[{grade:"A+",min:95,max:100,gpa:4.0,remark:"Excellent"},{grade:"A",min:90,max:94,gpa:3.7,remark:"Very Good"},{grade:"B+",min:85,max:89,gpa:3.3,remark:"Good"},{grade:"B",min:80,max:84,gpa:3.0,remark:"Above Average"},{grade:"C+",min:75,max:79,gpa:2.7,remark:"Average"},{grade:"C",min:70,max:74,gpa:2.3,remark:"Below Average"},{grade:"D",min:60,max:69,gpa:1.0,remark:"Pass"},{grade:"F",min:0,max:59,gpa:0.0,remark:"Fail"}];renderGradeBoundaries();saveSysSettings();toast("Reset to default ✅");}
+function updateWeightTotal(){let a=parseFloat(qs("wAssignment").value)||0,q=parseFloat(qs("wQuiz").value)||0,m=parseFloat(qs("wMidterm").value)||0,f=parseFloat(qs("wFinal").value)||0;let total=a+q+m+f;qs("weightTotal").innerText=total;qs("weightBarFill").style.width=Math.min(total,100)+"%";qs("weightBarFill").style.background=total===100?"#22c55e":total>100?"#ef4444":"#00c9a7";qs("weightWarning").style.display=total!==100?"inline":"none";qs("weightOk").style.display=total===100?"inline":"none";}
+function saveWeightage(){let a=parseFloat(qs("wAssignment").value)||0,q=parseFloat(qs("wQuiz").value)||0,m=parseFloat(qs("wMidterm").value)||0,f=parseFloat(qs("wFinal").value)||0;if(a+q+m+f!==100){toast("Weights must total 100%");return;}sysSettings.weightage={assignment:a,quiz:q,midterm:m,final:f};saveSysSettings();toast("Weightage saved ✅");}
+function saveAttendanceRules(){sysSettings.attendance={min:qs("minAttendance").value,inGrade:qs("attendanceInGrade").value,weight:qs("wAttendance").value,action:qs("shortAttAction").value};saveSysSettings();toast("Attendance rules saved ✅");}
+load();loadTeachers();loadCourses();loadDepartments();loadEnrollments();loadAllocations();loadTimetable();
+setTab("dashboard",document.querySelector(".sidebar a"));
+</script>
+</body>
+</html>
