@@ -1,28 +1,24 @@
-const { Pool } = require('pg');
+const { Pool } = require("pg");
 
 const pool = new Pool({
-  host: 'db.eajmdrghdoykrechzbyr.supabase.co',
-  port: 5432,
-  user: 'postgres',
-  password: 'veniatvidiat34',
-  database: 'postgres',
-  ssl: { rejectUnauthorized: false }
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
-pool.connect((err) => {
-  if (err) {
-    console.log("❌ DB Error:", err);
-  } else {
-    console.log("✅ Connected to PostgreSQL");
-  }
+pool.on("connect", () => {
+  console.log("Connected to database");
+});
+
+pool.on("error", (err) => {
+  console.error("Unexpected DB error:", err);
 });
 
 module.exports = {
-  query: (sql, params, callback) => {
-    let i = 0;
-    const pgSql = sql.replace(/\?/g, () => `$${++i}`);
-    pool.query(pgSql, params, (err, result) => {
-      callback(err, result ? result.rows : null);
+  query: (text, params, callback) => {
+    return pool.query(text, params, (err, result) => {
+      if (callback) callback(err, result ? result.rows : []);
     });
-  }
+  },
 };
