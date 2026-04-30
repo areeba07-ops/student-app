@@ -404,13 +404,13 @@ body.light .modal-content{background:rgba(255,255,255,0.97);}
 <script>
 let token=null;
 try{token=localStorage.getItem("token")||sessionStorage.getItem("token");}catch(e){token=null;}
-const API="https://student-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/students";
-const TAPI="https://student-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/teachers";
-const CAPI="https://student-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/courses";
-const DAPI="https://student-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/departments";
-const EAPI="https://student-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/enrollments";
-const AAPI="https://student-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/allocations";
-const TTAPI="https://student-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/timetabless";
+const API="https://student-app-five-iota.vercel.app/udent-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/students";
+const TAPI="https://student-app-five-iota.vercel.app/udent-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/teachers";
+const CAPI="https://student-app-five-iota.vercel.app/udent-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/courses";
+const DAPI="https://student-app-five-iota.vercel.app/udent-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/departments";
+const EAPI="https://student-app-five-iota.vercel.app/udent-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/enrollments";
+const AAPI="https://student-app-five-iota.vercel.app/udent-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/allocations";
+const TTAPI="https://student-app-five-iota.vercel.app/udent-nmr4qaetu-areeba07-ops-projects.vercel.app:3000/timetabless";
 if(!token){window.location.href="/adminlogin.html";}
 let students=[],teachers=[],courses=[],departments=[],enrollments=[],allocations=[],timetables=[];
 let currentPage=1,editId=null,courseEditId=null,departmentEditId=null,chart=null,bigChart=null,currentTab="dashboard",activeLink=null,chartType="bar";
