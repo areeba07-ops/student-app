@@ -24,7 +24,7 @@ body{min-height:100vh;display:flex;justify-content:center;align-items:center;ove
 body.light .bg{background:linear-gradient(135deg,#e0f7fa,#e8eaf6,#fce4ec,#e0f2fe,#f3e5f5);background-size:400% 400%;}
 @keyframes gradShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:.38;pointer-events:none;z-index:0;animation:orbFloat 20s ease-in-out infinite;}
-.orb1{width:480px;height:480px;background:radial-gradient(circle,#4361ee,transparent);top:-120px;right:-120px;animation-delay:0s;}
+.orb1{width:480px;height:480px;background:radial-gradient(circle,#4361ee,transparent);top:-120px;right:-120px;}
 .orb2{width:380px;height:380px;background:radial-gradient(circle,#f72585,transparent);bottom:-80px;left:-80px;animation-delay:-8s;}
 .orb3{width:320px;height:320px;background:radial-gradient(circle,#00c9a7,transparent);top:50%;left:40%;transform:translate(-50%,-50%);animation-delay:-15s;}
 @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(35px,-25px) scale(1.06);}66%{transform:translate(-25px,35px) scale(0.96);}}
@@ -74,7 +74,6 @@ body.light .bg{background:linear-gradient(135deg,#e0f7fa,#e8eaf6,#fce4ec,#e0f2fe
 <div class="orb orb2"></div>
 <div class="orb orb3"></div>
 <div id="toast"></div>
-
 <div class="wrap">
   <div class="top-bar">
     <button class="link-btn" onclick="toggleTheme()">🌓 Theme</button>
@@ -89,7 +88,6 @@ body.light .bg{background:linear-gradient(135deg,#e0f7fa,#e8eaf6,#fce4ec,#e0f2fe
     <button class="tab active" id="loginTab" onclick="switchTab('login')">Login</button>
     <button class="tab" id="signupTab" onclick="switchTab('signup')">Sign Up</button>
   </div>
-
   <div class="panel active" id="loginPanel">
     <div class="field">
       <label>Username</label>
@@ -107,42 +105,23 @@ body.light .bg{background:linear-gradient(135deg,#e0f7fa,#e8eaf6,#fce4ec,#e0f2fe
     <div class="msg" id="loginMsg"></div>
     <div id="attempts"></div>
   </div>
-
   <div class="panel" id="signupPanel">
     <div class="info-box">Your email must be registered by admin first. After signing up, use your <strong>username</strong> to login.</div>
-    <div class="field">
-      <label>Full Name</label>
-      <input type="text" id="signupName" placeholder="Your full name">
-    </div>
-    <div class="field">
-      <label>Email Address</label>
-      <input type="email" id="signupEmail" placeholder="Admin-registered email">
-    </div>
-    <div class="field">
-      <label>Username</label>
-      <input type="text" id="signupUsername" placeholder="Choose a username">
-    </div>
+    <div class="field"><label>Full Name</label><input type="text" id="signupName" placeholder="Your full name"></div>
+    <div class="field"><label>Email Address</label><input type="email" id="signupEmail" placeholder="Admin-registered email"></div>
+    <div class="field"><label>Username</label><input type="text" id="signupUsername" placeholder="Choose a username"></div>
     <div class="divider">Password</div>
-    <div class="field">
-      <label>Password</label>
-      <input type="password" id="signupPassword" placeholder="Min 6 characters">
-      <span class="eye" onclick="togglePass('signupPassword',this)">Show</span>
-    </div>
-    <div class="field">
-      <label>Confirm Password</label>
-      <input type="password" id="signupConfirm" placeholder="Repeat password" onkeydown="if(event.key==='Enter')doSignup()">
-      <span class="eye" onclick="togglePass('signupConfirm',this)">Show</span>
-    </div>
+    <div class="field"><label>Password</label><input type="password" id="signupPassword" placeholder="Min 6 characters"><span class="eye" onclick="togglePass('signupPassword',this)">Show</span></div>
+    <div class="field"><label>Confirm Password</label><input type="password" id="signupConfirm" placeholder="Repeat password" onkeydown="if(event.key==='Enter')doSignup()"><span class="eye" onclick="togglePass('signupConfirm',this)">Show</span></div>
     <button class="btn" id="signupBtn" onclick="doSignup()">Create Account</button>
     <div class="msg" id="signupMsg"></div>
   </div>
 </div>
-
 <script>
-const BASE="https://student-app-five-iota.vercel.app/udent-nmr4qaetu-areeba07-ops-projects.vercel.app:3000";
-const SAPI=BASE+"/students";
-const REG_API=BASE+"/student-register";
-const LOGIN_API=BASE+"/student-login";
+const BASE="";
+const SAPI="/students";
+const REG_API="/student-register";
+const LOGIN_API="/student-login";
 try{if(localStorage.getItem("studentToken")||sessionStorage.getItem("studentToken"))window.location.href="/student-dashboard.html";}catch(e){}
 let loginCooldown=false,loginAttempts=0;
 function qs(id){return document.getElementById(id);}
@@ -184,7 +163,7 @@ function doLogin(){
       setMsg("loginMsg",data.message||"Invalid credentials","err");
       if(loginAttempts>=5)startCooldown(30);
     }
-  }).catch(()=>{btn.textContent="Login";btn.disabled=false;showToast("Server error. Is the server running?","error");});
+  }).catch(()=>{btn.textContent="Login";btn.disabled=false;showToast("Server error. Please try again.","error");});
 }
 function doSignup(){
   const name=qs("signupName").value.trim(),email=qs("signupEmail").value.trim().toLowerCase(),username=qs("signupUsername").value.trim().toLowerCase(),password=qs("signupPassword").value.trim(),confirm=qs("signupConfirm").value.trim();
@@ -209,9 +188,9 @@ function doSignup(){
         setMsg("signupMsg","Account created! Login with username: "+username,"ok");
         qs("signupName").value="";qs("signupEmail").value="";qs("signupUsername").value="";qs("signupPassword").value="";qs("signupConfirm").value="";
         setTimeout(()=>switchTab("login"),2000);
-      }else{setMsg("signupMsg",data.message||"Registration failed. Try again.","err");}
+      }else{setMsg("signupMsg",data.message||"Registration failed.","err");}
     });
-  }).catch(err=>{qs("signupBtn").textContent="Create Account";qs("signupBtn").disabled=false;setMsg("signupMsg",err.message||"Server error. Please try again.","err");showToast("Server error.","error");});
+  }).catch(err=>{qs("signupBtn").textContent="Create Account";qs("signupBtn").disabled=false;setMsg("signupMsg",err.message||"Server error.","err");showToast("Server error.","error");});
 }
 </script>
 </body>

@@ -7,9 +7,15 @@
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "server.js"
-    }
+    { "src": "/adminlogin.html", "dest": "/adminlogin.html" },
+    { "src": "/index.html", "dest": "/index.html" },
+    { "src": "/studentlogin.html", "dest": "/studentlogin.html" },
+    { "src": "/student-dashboard.html", "dest": "/student-dashboard.html" },
+    { "src": "/teacherlogin.html", "dest": "/teacherlogin.html" },
+    { "src": "/teacher-dashboard.html", "dest": "/teacher-dashboard.html" },
+    { "src": "/(.*\\.html)", "dest": "/$1" },
+    { "src": "/(.*\\.css)", "dest": "/$1" },
+    { "src": "/(.*\\.js)", "dest": "/$1" },
+    { "src": "/(.*)", "dest": "/server.js" }
   ]
 }

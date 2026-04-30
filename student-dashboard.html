@@ -244,7 +244,7 @@ tr:hover td{background:var(--hover);}
 </div>
 
 <script>
-const BASE="https://student-app-five-iota.vercel.app/udent-nmr4qaetu-areeba07-ops-projects.vercel.app:3000";
+const BASE="";
 let studentInfo=null;
 let myCourses=[],myAttendance=[],myGrades=[],myAssignments=[],myMaterials=[],myAnnouncements=[],myTimetable=[],myProfile=null;
 const COLORS=["#00c9a7","#4361ee","#f59e0b","#ef4444","#8b5cf6","#ec4899","#06b6d4","#22c55e"];
@@ -253,7 +253,7 @@ function getToken(){return localStorage.getItem("studentToken")||sessionStorage.
 function authHeaders(){return{"Content-Type":"application/json","Authorization":"Bearer "+getToken()};}
 window.onload=async()=>{
   const token=getToken();
-  if(!token){window.location.href="studentlogin.html";return;}
+  if(!token){window.location.href="/studentlogin.html";return;}
   const stored=localStorage.getItem("studentInfo")||sessionStorage.getItem("studentInfo");
   try{studentInfo=stored?JSON.parse(stored):{name:"Student"};}catch(e){studentInfo={name:"Student"};}
   document.getElementById("sidebarName").textContent=studentInfo.name||"Student";
